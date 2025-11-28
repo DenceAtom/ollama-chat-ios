@@ -1,0 +1,73 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'OllamaChat/**'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
+    - name: Install dependencies (if any)
+      run: |
+        # Add any Swift Package Manager dependencies here if needed
+        # swift package resolve
+        
+    - name: Build and Archive
+      run: |
+        cd OllamaChat
+        xcodebuild clean archive \
+          -project OllamaChat.xcodeproj \
+          -scheme OllamaChat \
+          -configuration Release \
+          -archivePath ./build/OllamaChat.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+          
+    - name: Create IPA from Archive
+      run: |
+        cd OllamaChat/build
+        # Create Payload directory (required for IPA structure)
+        mkdir -p Payload
+        
+        # Copy the app from the archive to Payload
+        cp -r OllamaChat.xcarchive/Products/Applications/OllamaChat.app Payload/
+        
+        # Create the IPA file (it's just a zip file with .ipa extension)
+        zip -r OllamaChat.ipa Payload
+        
+        # Clean up
+        rm -rf Payload
+        
+        # Verify IPA was created
+        if [ -f "OllamaChat.ipa" ]; then
+          echo "✅ IPA created successfully!"
+          ls -lh OllamaChat.ipa
+        else
+          echo "❌ Failed to create IPA"
+          exit 1
+        fi
+          
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OllamaChat-IPA
+        path: OllamaChat/build/OllamaChat.ipa
+        retention-days: 30
+

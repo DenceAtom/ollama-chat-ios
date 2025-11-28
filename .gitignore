@@ -1,0 +1,29 @@
+# Xcode
+build/
+*.xcworkspace
+!default.xcworkspace
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcuserstate
+*.xcuserdatad
+.DS_Store
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Archives
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific files
+*.swp
+*~.nib
+
+# IDE
+.idea/
+.vscode/
+
