@@ -28,9 +28,15 @@ jobs:
         # Add any Swift Package Manager dependencies here if needed
         # swift package resolve
         
+    - name: List available schemes
+      run: |
+        cd OllamaChat
+        xcodebuild -list -project OllamaChat.xcodeproj || echo "No schemes found, will use target"
+        
     - name: Build and Archive
       run: |
         cd OllamaChat
+        # Try with scheme first, fallback to target
         xcodebuild clean archive \
           -project OllamaChat.xcodeproj \
           -scheme OllamaChat \
@@ -38,7 +44,19 @@ jobs:
           -archivePath ./build/OllamaChat.xcarchive \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_ALLOWED=NO \
+          DEVELOPMENT_TEAM="" \
+          PROVISIONING_PROFILE_SPECIFIER="" || \
+        xcodebuild clean archive \
+          -project OllamaChat.xcodeproj \
+          -target OllamaChat \
+          -configuration Release \
+          -archivePath ./build/OllamaChat.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          DEVELOPMENT_TEAM="" \
+          PROVISIONING_PROFILE_SPECIFIER=""
           
     - name: Create IPA from Archive
       run: |
